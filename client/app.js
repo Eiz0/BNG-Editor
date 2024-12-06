@@ -79,10 +79,20 @@ canvas.addEventListener('click', (event) => {
 document.getElementById('export-project').addEventListener('click', () => {
   const content = canvas.innerHTML;
   const styles = `
-    body { font-family: Arial, sans-serif; }
-    .editor-canvas { background-color: #f0f0f0; padding: 10px; }
-    button { margin: 10px; padding: 10px; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    .editor-canvas { 
+      background-color: #f0f0f0; 
+      position: relative; 
+      width: 100%; 
+      height: 100vh; 
+      border: 1px solid #ccc; 
+    }
+    .editor-canvas > * { 
+      position: absolute; 
+      cursor: grab; 
+    }
   `;
+
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -93,10 +103,14 @@ document.getElementById('export-project').addEventListener('click', () => {
       <style>${styles}</style>
     </head>
     <body>
-      <div class="editor-canvas">${content}</div>
+      <div class="editor-canvas">
+        ${content}
+      </div>
     </body>
     </html>
   `;
+
+  // Создаем Blob для загрузки
   const blob = new Blob([htmlContent], { type: 'text/html' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -213,3 +227,13 @@ function onMouseMove(event) {
     }
   }
 }
+
+document.getElementById('reset-position').addEventListener('click', () => {
+  const elements = canvas.children;
+  for (let element of elements) {
+    element.style.left = '';
+    element.style.top = '';
+  }
+  saveCanvasToLocalStorage(); // Сохраняем сброшенное состояние
+  console.log('Положение элементов сброшено');
+});
