@@ -62,3 +62,52 @@ async function loadProjects() {
 // Привязка кнопок
 saveButton.addEventListener('click', saveProject);
 loadButton.addEventListener('click', loadProjects);
+
+
+document.getElementById('export-project').addEventListener('click', exportProject);
+
+function exportProject() {
+  const canvasContent = canvas.innerHTML; // Получаем содержимое canvas
+  const styles = `
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .editor-canvas {
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  `;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Экспортированный проект</title>
+      <style>${styles}</style>
+    </head>
+    <body>
+      <div class="editor-canvas">
+        ${canvasContent}
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Создаем файл Blob
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'exported_project.html';
+  link.click();
+}
