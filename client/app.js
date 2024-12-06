@@ -111,3 +111,36 @@ function exportProject() {
   link.download = 'exported_project.html';
   link.click();
 }
+
+canvas.addEventListener('click', (event) => {
+  if (event.target !== canvas) {
+    event.target.classList.toggle('selected');
+  }
+});
+
+document.getElementById('delete-selected').addEventListener('click', () => {
+  const selectedElements = document.querySelectorAll('.selected');
+  selectedElements.forEach(element => element.remove());
+});
+
+canvas.addEventListener('dragend', (event) => {
+  const element = event.target;
+  if (element !== canvas) {
+    const gridSize = 20; // Размер ячейки сетки
+    const rect = element.getBoundingClientRect();
+    element.style.left = `${Math.round(rect.left / gridSize) * gridSize}px`;
+    element.style.top = `${Math.round(rect.top / gridSize) * gridSize}px`;
+  }
+});
+
+function saveStateToLocalStorage() {
+  localStorage.setItem('canvasContent', canvas.innerHTML);
+}
+canvas.addEventListener('DOMSubtreeModified', saveStateToLocalStorage);
+
+window.addEventListener('load', () => {
+  const savedContent = localStorage.getItem('canvasContent');
+  if (savedContent) {
+    canvas.innerHTML = savedContent;
+  }
+});
