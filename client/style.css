@@ -20,11 +20,14 @@ main {
 }
 
 .editor-canvas {
+  flex: 3;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 10px;
   background-image: linear-gradient(to right, #ccc 1px, transparent 1px),
                     linear-gradient(to bottom, #ccc 1px, transparent 1px);
   background-size: 20px 20px;
 }
-
 
 .toolbox {
   flex: 1;
@@ -48,22 +51,18 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* Адаптивность для меньших экранов */
-@media (max-width: 768px) {
-  main {
-    flex-direction: column;
-  }
+.settings-panel {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
-  .editor-canvas {
-    width: 100%;
-    height: 50vh;
-  }
-
-  .toolbox {
-    width: 100%;
-    border-left: none;
-    border-top: 1px solid #ccc;
-  }
+.settings-panel h3 {
+  margin-top: 0;
 }
 
 .selected {

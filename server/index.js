@@ -1,14 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Импортируем cors
+const cors = require('cors');
 const projectRoutes = require('./routes/project');
 
 const app = express();
 
-// Включаем CORS для всех запросов
-app.use(cors());
-
 // Middleware
+app.use(cors());
 app.use(bodyParser.json());
 
 // Маршруты API

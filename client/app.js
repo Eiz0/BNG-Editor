@@ -1,92 +1,88 @@
 const canvas = document.getElementById('canvas');
-const saveButton = document.getElementById('save-project');
-const loadButton = document.getElementById('load-projects');
+const imageUploadInput = document.getElementById('image-upload');
 
-// Добавление кнопки на canvas
+// Сохранение содержимого canvas в localStorage
+function saveCanvasToLocalStorage() {
+  const content = canvas.innerHTML;
+  console.log('Сохраняю в localStorage:', content); // Лог для проверки
+  localStorage.setItem('canvasContent', content);
+}
+
+// Загрузка содержимого canvas из localStorage
+function loadCanvasFromLocalStorage() {
+  const savedContent = localStorage.getItem('canvasContent');
+  console.log('Загружаю из localStorage:', savedContent); // Лог для проверки
+  if (savedContent) {
+    canvas.innerHTML = savedContent;
+  }
+}
+
+// Пример функции с вызовом saveCanvasToLocalStorage
 document.getElementById('add-button').addEventListener('click', () => {
   const button = document.createElement('button');
   button.textContent = 'Кнопка';
   button.style.margin = '10px';
   canvas.appendChild(button);
+  saveCanvasToLocalStorage();
 });
 
-// Добавление текста на canvas
 document.getElementById('add-text').addEventListener('click', () => {
   const text = document.createElement('p');
   text.textContent = 'Текст';
   text.style.margin = '10px';
   canvas.appendChild(text);
+  saveCanvasToLocalStorage();
 });
 
-// Сохранение проекта
-async function saveProject() {
-  const content = canvas.innerHTML;
-  const name = prompt('Введите имя проекта:');
-  if (!name) {
-    alert('Имя проекта обязательно!');
-    return;
+document.getElementById('add-text-input').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Введите текст...';
+  input.style.margin = '10px';
+  canvas.appendChild(input);
+  saveCanvasToLocalStorage();
+});
+
+document.getElementById('add-image').addEventListener('click', () => {
+  imageUploadInput.click();
+});
+
+imageUploadInput.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.margin = '10px';
+      img.style.width = '100px';
+      img.style.height = '100px';
+      canvas.appendChild(img);
+      saveCanvasToLocalStorage();
+    };
+    reader.readAsDataURL(file);
   }
+});
 
-  console.log('Отправка данных на сервер:', { name, content }); // Проверка
+document.getElementById('delete-selected').addEventListener('click', () => {
+  const selectedElements = document.querySelectorAll('.selected');
+  selectedElements.forEach(element => element.remove());
+  saveCanvasToLocalStorage();
+});
 
-  const response = await fetch('http://localhost:3000/api/projects', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ name, content }),
-  });
+canvas.addEventListener('click', (event) => {
+  if (event.target !== canvas) {
+    event.target.classList.toggle('selected');
+  }
+});
 
-  const result = await response.json();
-  console.log('Ответ сервера:', result); // Проверка
-
-  alert(result.message);
-}
-
-// Загрузка проектов
-async function loadProjects() {
-  const response = await fetch('http://localhost:3000/api/projects');
-  const projects = await response.json();
-
-  canvas.innerHTML = ''; // Очистить canvas
-  projects.forEach(project => {
-    const projectContainer = document.createElement('div');
-    projectContainer.classList.add('project-item');
-    projectContainer.innerHTML = `<strong>${project.name}:</strong><br>${project.content}`;
-    canvas.appendChild(projectContainer);
-  });
-}
-
-
-
-// Привязка кнопок
-saveButton.addEventListener('click', saveProject);
-loadButton.addEventListener('click', loadProjects);
-
-
-document.getElementById('export-project').addEventListener('click', exportProject);
-
-function exportProject() {
-  const canvasContent = canvas.innerHTML; // Получаем содержимое canvas
+document.getElementById('export-project').addEventListener('click', () => {
+  const content = canvas.innerHTML;
   const styles = `
-    body {
-      font-family: Arial, sans-serif;
-    }
-    .editor-canvas {
-      background-color: #f0f0f0;
-      border: 1px solid #ccc;
-      padding: 10px;
-    }
-    button {
-      margin: 10px;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
+    body { font-family: Arial, sans-serif; }
+    .editor-canvas { background-color: #f0f0f0; padding: 10px; }
+    button { margin: 10px; padding: 10px; }
   `;
-
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -97,50 +93,67 @@ function exportProject() {
       <style>${styles}</style>
     </head>
     <body>
-      <div class="editor-canvas">
-        ${canvasContent}
-      </div>
+      <div class="editor-canvas">${content}</div>
     </body>
     </html>
   `;
-
-  // Создаем файл Blob
   const blob = new Blob([htmlContent], { type: 'text/html' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = 'exported_project.html';
   link.click();
+});
+
+async function saveProject() {
+  const content = canvas.innerHTML;
+  const name = prompt('Введите имя проекта:');
+  if (!name) {
+    alert('Имя проекта обязательно!');
+    return;
+  }
+  const response = await fetch('http://localhost:3000/api/projects', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, content }),
+  });
+  const result = await response.json();
+  alert(result.message);
 }
 
+async function loadProjects() {
+  const response = await fetch('http://localhost:3000/api/projects');
+  const projects = await response.json();
+  canvas.innerHTML = '';
+  projects.forEach(project => {
+    const container = document.createElement('div');
+    container.innerHTML = `<strong>${project.name}:</strong>${project.content}`;
+    canvas.appendChild(container);
+  });
+}
+
+document.getElementById('save-project').addEventListener('click', saveProject);
+document.getElementById('load-projects').addEventListener('click', loadProjects);
+
+const fontSizeInput = document.getElementById('font-size');
+const textColorInput = document.getElementById('text-color');
 canvas.addEventListener('click', (event) => {
   if (event.target !== canvas) {
-    event.target.classList.toggle('selected');
+    const selectedElement = event.target;
+    fontSizeInput.value = parseInt(window.getComputedStyle(selectedElement).fontSize, 10) || 16;
+    textColorInput.value = window.getComputedStyle(selectedElement).color || '#000000';
+    fontSizeInput.addEventListener('input', () => {
+      selectedElement.style.fontSize = `${fontSizeInput.value}px`;
+    });
+    textColorInput.addEventListener('input', () => {
+      selectedElement.style.color = textColorInput.value;
+    });
   }
 });
 
-document.getElementById('delete-selected').addEventListener('click', () => {
-  const selectedElements = document.querySelectorAll('.selected');
-  selectedElements.forEach(element => element.remove());
-});
+window.addEventListener('load', loadCanvasFromLocalStorage);
 
-canvas.addEventListener('dragend', (event) => {
-  const element = event.target;
-  if (element !== canvas) {
-    const gridSize = 20; // Размер ячейки сетки
-    const rect = element.getBoundingClientRect();
-    element.style.left = `${Math.round(rect.left / gridSize) * gridSize}px`;
-    element.style.top = `${Math.round(rect.top / gridSize) * gridSize}px`;
-  }
-});
-
-function saveStateToLocalStorage() {
-  localStorage.setItem('canvasContent', canvas.innerHTML);
-}
-canvas.addEventListener('DOMSubtreeModified', saveStateToLocalStorage);
-
-window.addEventListener('load', () => {
-  const savedContent = localStorage.getItem('canvasContent');
-  if (savedContent) {
-    canvas.innerHTML = savedContent;
-  }
+document.getElementById('clear-canvas').addEventListener('click', () => {
+  canvas.innerHTML = ''; // Очистка содержимого canvas
+  localStorage.removeItem('canvasContent'); // Удаление содержимого из localStorage
+  console.log('Canvas очищен и данные удалены из localStorage');
 });

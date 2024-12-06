@@ -16,11 +16,22 @@
       <aside class="toolbox">
         <button id="add-button">Добавить кнопку</button>
         <button id="add-text">Добавить текст</button>
+        <button id="add-text-input">Добавить текстовое поле</button>
+        <button id="add-image">Добавить изображение</button>
+        <input type="file" id="image-upload" style="display: none;" accept="image/*">
+        <button id="delete-selected">Удалить выделенные</button>
         <button id="save-project">Сохранить проект</button>
         <button id="load-projects">Загрузить проекты</button>
         <button id="export-project">Экспортировать проект</button>
-        <button id="delete-selected">Удалить выделенные</button>
-      </aside>      
+        <button id="clear-canvas">Очистить Canvas</button>
+      </aside>
+      <div id="settings-panel" class="settings-panel">
+        <h3>Настройки</h3>
+        <label for="font-size">Размер шрифта:</label>
+        <input type="number" id="font-size" min="10" max="100" step="1">
+        <label for="text-color">Цвет текста:</label>
+        <input type="color" id="text-color">
+      </div>
     </main>
   </div>
   <script src="app.js"></script>

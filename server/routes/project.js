@@ -11,21 +11,17 @@ router.get('/', (req, res) => {
 
 // Сохранение нового проекта
 router.post('/', (req, res) => {
-  console.log('Получены данные:', req.body); // Проверка
   const { name, content } = req.body;
 
   if (!name || !content) {
-    console.log('Ошибка: Name и Content обязательны');
     return res.status(400).json({ error: 'Name and content are required' });
   }
 
   const newProject = { id: Date.now(), name, content };
   projects.push(newProject);
 
-  console.log('Проект сохранен:', newProject);
   res.status(201).json({ message: 'Проект сохранен', project: newProject });
 });
-
 
 // Удаление проекта (опционально)
 router.delete('/:id', (req, res) => {
