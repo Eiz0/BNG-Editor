@@ -1,18 +1,37 @@
 const express = require('express');
 const router = express.Router();
 
-const projects = []; // Временное хранилище для проектов
+// Временное хранилище для проектов
+let projects = [];
 
-// Маршрут для получения списка проектов
+// Получение всех проектов
 router.get('/', (req, res) => {
   res.json(projects);
 });
 
-// Маршрут для добавления нового проекта
+// Сохранение нового проекта
 router.post('/', (req, res) => {
-  const project = req.body;
-  projects.push(project);
-  res.status(201).json({ message: 'Проект сохранен', project });
+  console.log('Получены данные:', req.body); // Проверка
+  const { name, content } = req.body;
+
+  if (!name || !content) {
+    console.log('Ошибка: Name и Content обязательны');
+    return res.status(400).json({ error: 'Name and content are required' });
+  }
+
+  const newProject = { id: Date.now(), name, content };
+  projects.push(newProject);
+
+  console.log('Проект сохранен:', newProject);
+  res.status(201).json({ message: 'Проект сохранен', project: newProject });
 });
 
-module.exports = router; // Экспорт маршрутов
+
+// Удаление проекта (опционально)
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+  projects = projects.filter(project => project.id !== parseInt(id, 10));
+  res.status(200).json({ message: 'Проект удален' });
+});
+
+module.exports = router;
