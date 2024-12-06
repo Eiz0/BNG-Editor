@@ -68,3 +68,13 @@ button:hover {
 .selected {
   outline: 2px dashed red;
 }
+
+.editor-canvas > * {
+  position: absolute; /* Для перемещения */
+  cursor: grab;
+}
+
+.editor-canvas > *.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}

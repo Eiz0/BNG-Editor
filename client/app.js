@@ -157,3 +157,59 @@ document.getElementById('clear-canvas').addEventListener('click', () => {
   localStorage.removeItem('canvasContent'); // Удаление содержимого из localStorage
   console.log('Canvas очищен и данные удалены из localStorage');
 });
+
+let draggedElement = null; // Элемент, который перетаскивается
+let offsetX = 0; // Смещение по X
+let offsetY = 0; // Смещение по Y
+
+// Обработчик начала перетаскивания
+canvas.addEventListener('mousedown', (event) => {
+  if (event.target !== canvas) {
+    draggedElement = event.target;
+    draggedElement.classList.add('dragging');
+
+    // Запоминаем начальное смещение курсора
+    const rect = draggedElement.getBoundingClientRect();
+    offsetX = event.clientX - rect.left;
+    offsetY = event.clientY - rect.top;
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }
+});
+
+// Перемещение элемента
+function onMouseMove(event) {
+  if (draggedElement) {
+    draggedElement.style.left = `${event.clientX - offsetX}px`;
+    draggedElement.style.top = `${event.clientY - offsetY}px`;
+  }
+}
+
+// Завершение перетаскивания
+function onMouseUp() {
+  if (draggedElement) {
+    draggedElement.classList.remove('dragging');
+    draggedElement = null;
+    saveCanvasToLocalStorage(); // Сохраняем новое положение в localStorage
+  }
+
+  document.removeEventListener('mousemove', onMouseMove);
+  document.removeEventListener('mouseup', onMouseUp);
+}
+
+function onMouseMove(event) {
+  if (draggedElement) {
+    const canvasRect = canvas.getBoundingClientRect();
+    const newLeft = event.clientX - offsetX;
+    const newTop = event.clientY - offsetY;
+
+    // Ограничиваем перемещение
+    if (newLeft >= 0 && newLeft + draggedElement.offsetWidth <= canvasRect.width) {
+      draggedElement.style.left = `${newLeft}px`;
+    }
+    if (newTop >= 0 && newTop + draggedElement.offsetHeight <= canvasRect.height) {
+      draggedElement.style.top = `${newTop}px`;
+    }
+  }
+}
