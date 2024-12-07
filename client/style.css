@@ -122,3 +122,18 @@ header.dark {
   outline: 2px dashed red;
 }
 
+.transform-controls {
+  margin: 10px 0;
+}
+
+.transform-controls label {
+  margin-right: 10px;
+}
+
+.rotation-controls {
+  margin: 10px 0;
+}
+
+.rotation-controls label {
+  margin-right: 10px;
+}

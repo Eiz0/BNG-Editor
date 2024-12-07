@@ -27,6 +27,15 @@
         <button id="reset-position">Сбросить положение элементов</button>
         <button id="group-elements">Сгруппировать элементы</button>
         <button id="ungroup-elements">Разгруппировать элементы</button>
+        <div class="transform-controls">
+          <label>Ширина: <input type="number" id="element-width" min="10" max="1000" step="1"></label>
+          <label>Высота: <input type="number" id="element-height" min="10" max="1000" step="1"></label>
+          <button id="apply-dimensions">Применить размеры</button>
+        </div>
+        <div class="rotation-controls">
+          <label>Угол вращения: <input type="number" id="element-rotation" min="0" max="360" step="1"></label>
+          <button id="apply-rotation">Применить вращение</button>
+        </div>                
       </aside>
       <div id="settings-panel" class="settings-panel">
         <h3>Настройки</h3>

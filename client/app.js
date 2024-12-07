@@ -397,3 +397,50 @@ document.getElementById('ungroup-elements').addEventListener('click', () => {
 
   saveCanvasToLocalStorage(); // Сохраняем новое состояние
 });
+
+const elementWidthInput = document.getElementById('element-width');
+const elementHeightInput = document.getElementById('element-height');
+const applyDimensionsButton = document.getElementById('apply-dimensions');
+
+let selectedElement = null;
+
+// Обновляем текущий элемент при клике
+canvas.addEventListener('click', (event) => {
+  if (event.target !== canvas) {
+    selectedElement = event.target;
+    elementWidthInput.value = parseInt(selectedElement.style.width || selectedElement.offsetWidth, 10);
+    elementHeightInput.value = parseInt(selectedElement.style.height || selectedElement.offsetHeight, 10);
+  }
+});
+
+// Применение размеров к выбранному элементу
+applyDimensionsButton.addEventListener('click', () => {
+  if (!selectedElement) {
+    alert('Выберите элемент для изменения размеров');
+    return;
+  }
+
+  const newWidth = elementWidthInput.value || selectedElement.offsetWidth;
+  const newHeight = elementHeightInput.value || selectedElement.offsetHeight;
+
+  selectedElement.style.width = `${newWidth}px`;
+  selectedElement.style.height = `${newHeight}px`;
+
+  saveCanvasToLocalStorage(); // Сохраняем изменения
+});
+
+const elementRotationInput = document.getElementById('element-rotation');
+const applyRotationButton = document.getElementById('apply-rotation');
+
+// Применение вращения к выбранному элементу
+applyRotationButton.addEventListener('click', () => {
+  if (!selectedElement) {
+    alert('Выберите элемент для вращения');
+    return;
+  }
+
+  const rotation = elementRotationInput.value || 0;
+  selectedElement.style.transform = `rotate(${rotation}deg)`;
+
+  saveCanvasToLocalStorage(); // Сохраняем изменения
+});
