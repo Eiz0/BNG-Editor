@@ -423,8 +423,17 @@ applyDimensionsButton.addEventListener('click', () => {
   const newWidth = elementWidthInput.value || selectedElement.offsetWidth;
   const newHeight = elementHeightInput.value || selectedElement.offsetHeight;
 
-  selectedElement.style.width = `${newWidth}px`;
-  selectedElement.style.height = `${newHeight}px`;
+  if (!isNaN(newWidth) && newWidth > 0) {
+    selectedElement.style.width = `${newWidth}px`;
+  } else {
+    console.warn('Некорректное значение ширины:', newWidth);
+  }
+  
+  if (!isNaN(newHeight) && newHeight > 0) {
+    selectedElement.style.height = `${newHeight}px`;
+  } else {
+    console.warn('Некорректное значение высоты:', newHeight);
+  }  
 
   saveCanvasToLocalStorage(); // Сохраняем изменения
 });
@@ -444,3 +453,98 @@ applyRotationButton.addEventListener('click', () => {
 
   saveCanvasToLocalStorage(); // Сохраняем изменения
 });
+
+const ws = new WebSocket('ws://localhost:3000');
+
+// Подключение WebSocket
+ws.onopen = () => {
+  console.log('Подключение к WebSocket установлено');
+};
+
+// Получение сообщений через WebSocket
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log('Получено сообщение через WebSocket:', message);
+
+  if (message.action === 'updateCanvas') {
+    console.log('Обновляем canvas с новыми данными');
+    canvas.innerHTML = message.data;
+    restoreEventHandlers(); // Восстанавливаем обработчики событий
+  }
+};
+
+// Лог ошибок WebSocket
+ws.onerror = (error) => {
+  console.error('Ошибка WebSocket:', error);
+};
+
+// Закрытие WebSocket-соединения
+ws.onclose = () => {
+  console.log('WebSocket-соединение закрыто');
+};
+
+// Отправка обновлений через WebSocket
+function sendUpdate(action, data) {
+  if (ws.readyState === WebSocket.OPEN) {
+    const message = JSON.stringify({ action, data });
+    console.log('Отправляем сообщение через WebSocket:', message);
+    ws.send(message);
+  } else {
+    console.warn('WebSocket не подключен');
+  }
+}
+
+// Сохранение изменений в canvas
+const observer = new MutationObserver(() => {
+  const canvasContent = canvas.innerHTML;
+  console.log('Изменения в canvas:', canvasContent);
+  sendUpdate('updateCanvas', canvasContent);
+});
+
+// Наблюдаем за изменениями в canvas
+observer.observe(canvas, { childList: true, subtree: true });
+
+// Восстановление обработчиков событий
+function restoreEventHandlers() {
+  const elements = canvas.querySelectorAll('*');
+  elements.forEach((el) => {
+    el.addEventListener('mousedown', handleMouseDown); // Обработчик перетаскивания
+    el.addEventListener('click', () => el.classList.toggle('selected')); // Обработчик выбора
+  });
+}
+
+// Пример обработчика перетаскивания
+let draggedElement = null;
+let offsetX = 0;
+let offsetY = 0;
+
+canvas.addEventListener('mousedown', (event) => {
+  if (event.target !== canvas) {
+    draggedElement = event.target;
+    const rect = draggedElement.getBoundingClientRect();
+    offsetX = event.clientX - rect.left;
+    offsetY = event.clientY - rect.top;
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }
+});
+
+function handleMouseMove(event) {
+  if (draggedElement) {
+    const newX = event.clientX - offsetX;
+    const newY = event.clientY - offsetY;
+    draggedElement.style.left = `${newX}px`;
+    draggedElement.style.top = `${newY}px`;
+
+    // Отправляем обновление
+    const canvasContent = canvas.innerHTML;
+    sendUpdate('updateCanvas', canvasContent);
+  }
+}
+
+function handleMouseUp() {
+  draggedElement = null;
+  document.removeEventListener('mousemove', handleMouseMove);
+  document.removeEventListener('mouseup', handleMouseUp);
+}
