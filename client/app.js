@@ -3,17 +3,21 @@ const imageUploadInput = document.getElementById('image-upload');
 
 // Сохранение содержимого canvas в localStorage
 function saveCanvasToLocalStorage() {
-  const content = canvas.innerHTML;
-  console.log('Сохраняю в localStorage:', content); // Лог для проверки
-  localStorage.setItem('canvasContent', content);
+  const canvasContent = canvas.innerHTML;
+  localStorage.setItem('canvasContent', canvasContent);
+  console.log('Сохраняю в localStorage:', canvasContent);
 }
 
 // Загрузка содержимого canvas из localStorage
 function loadCanvasFromLocalStorage() {
   const savedContent = localStorage.getItem('canvasContent');
-  console.log('Загружаю из localStorage:', savedContent); // Лог для проверки
   if (savedContent) {
     canvas.innerHTML = savedContent;
+    // Восстанавливаем функциональность для всех элементов
+    const allElements = canvas.querySelectorAll('*');
+    allElements.forEach((el) => {
+      el.addEventListener('click', () => el.classList.toggle('selected'));
+    });
   }
 }
 
@@ -236,4 +240,160 @@ document.getElementById('reset-position').addEventListener('click', () => {
   }
   saveCanvasToLocalStorage(); // Сохраняем сброшенное состояние
   console.log('Положение элементов сброшено');
+});
+
+const themeToggle = document.getElementById('theme-toggle');
+
+themeToggle.addEventListener('change', () => {
+  const isDark = themeToggle.checked;
+  document.body.classList.toggle('dark', isDark);
+  document.body.classList.toggle('light', !isDark);
+  localStorage.setItem('theme', isDark ? 'dark' : 'light'); // Сохраняем настройку
+});
+
+// Восстановление темы при загрузке страницы
+window.addEventListener('load', () => {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.body.classList.add(savedTheme);
+  themeToggle.checked = savedTheme === 'dark';
+});
+
+const canvasWidthInput = document.getElementById('canvas-width');
+const canvasHeightInput = document.getElementById('canvas-height');
+const applyCanvasSizeButton = document.getElementById('apply-canvas-size');
+
+applyCanvasSizeButton.addEventListener('click', () => {
+  const width = canvasWidthInput.value || 800;
+  const height = canvasHeightInput.value || 600;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  saveCanvasToLocalStorage(); // Сохраняем размер в localStorage
+});
+
+// Восстановление размера canvas при загрузке страницы
+window.addEventListener('load', () => {
+  const savedCanvasWidth = localStorage.getItem('canvasWidth');
+  const savedCanvasHeight = localStorage.getItem('canvasHeight');
+  if (savedCanvasWidth && savedCanvasHeight) {
+    canvas.style.width = `${savedCanvasWidth}px`;
+    canvas.style.height = `${savedCanvasHeight}px`;
+    canvasWidthInput.value = savedCanvasWidth;
+    canvasHeightInput.value = savedCanvasHeight;
+  }
+});
+
+const projectList = document.getElementById('project-list');
+const deleteProjectButton = document.getElementById('delete-project');
+
+// Обновление списка проектов
+async function updateProjectList() {
+  const response = await fetch('http://localhost:3000/api/projects');
+  const projects = await response.json();
+  projectList.innerHTML = '';
+  projects.forEach(project => {
+    const option = document.createElement('option');
+    option.value = project.id;
+    option.textContent = project.name;
+    projectList.appendChild(option);
+  });
+}
+
+// Удаление выбранного проекта
+deleteProjectButton.addEventListener('click', async () => {
+  const projectId = projectList.value;
+  if (!projectId) {
+    alert('Выберите проект для удаления');
+    return;
+  }
+
+  const response = await fetch(`http://localhost:3000/api/projects/${projectId}`, {
+    method: 'DELETE',
+  });
+  if (response.ok) {
+    alert('Проект удален');
+    updateProjectList();
+  } else {
+    alert('Ошибка при удалении проекта');
+  }
+});
+
+// Восстановление списка проектов при загрузке
+window.addEventListener('load', updateProjectList);
+
+document.getElementById('group-elements').addEventListener('click', () => {
+  const selectedElements = Array.from(document.querySelectorAll('.selected'));
+  
+  if (selectedElements.length < 2) {
+    alert('Выберите как минимум два элемента для группировки');
+    return;
+  }
+
+  // Создаем контейнер группы
+  const groupContainer = document.createElement('div');
+  groupContainer.classList.add('group');
+  groupContainer.style.position = 'absolute';
+  groupContainer.style.border = '1px dashed blue'; // Визуальная индикация группы
+
+  // Вычисляем границы группы
+  const canvasRect = canvas.getBoundingClientRect();
+  let minLeft = Infinity, minTop = Infinity;
+  let maxRight = -Infinity, maxBottom = -Infinity;
+
+  selectedElements.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    const offsetX = rect.left - canvasRect.left;
+    const offsetY = rect.top - canvasRect.top;
+
+    // Вычисляем общие границы группы
+    minLeft = Math.min(minLeft, offsetX);
+    minTop = Math.min(minTop, offsetY);
+    maxRight = Math.max(maxRight, offsetX + rect.width);
+    maxBottom = Math.max(maxBottom, offsetY + rect.height);
+
+    // Перемещаем элемент в группу
+    el.style.position = 'absolute';
+    el.style.left = `${offsetX - minLeft}px`;
+    el.style.top = `${offsetY - minTop}px`;
+    el.classList.remove('selected');
+    groupContainer.appendChild(el);
+  });
+
+  // Устанавливаем размеры и положение группы
+  groupContainer.style.left = `${minLeft}px`;
+  groupContainer.style.top = `${minTop}px`;
+  groupContainer.style.width = `${maxRight - minLeft}px`;
+  groupContainer.style.height = `${maxBottom - minTop}px`;
+
+  canvas.appendChild(groupContainer);
+  saveCanvasToLocalStorage(); // Сохраняем новое состояние
+});
+
+
+document.getElementById('ungroup-elements').addEventListener('click', () => {
+  const selectedGroups = document.querySelectorAll('.group.selected');
+
+  if (selectedGroups.length === 0) {
+    alert('Выберите группу для разгруппировки');
+    return;
+  }
+
+  selectedGroups.forEach((group) => {
+    const groupRect = group.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+
+    // Перемещаем элементы из группы обратно в canvas
+    Array.from(group.children).forEach((child) => {
+      const childRect = child.getBoundingClientRect();
+      const offsetX = childRect.left - groupRect.left + parseFloat(group.style.left || 0);
+      const offsetY = childRect.top - groupRect.top + parseFloat(group.style.top || 0);
+
+      child.style.left = `${offsetX}px`;
+      child.style.top = `${offsetY}px`;
+      canvas.appendChild(child);
+    });
+
+    group.remove(); // Удаляем пустую группу
+  });
+
+  saveCanvasToLocalStorage(); // Сохраняем новое состояние
 });

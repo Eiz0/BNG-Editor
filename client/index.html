@@ -25,6 +25,8 @@
         <button id="export-project">Экспортировать проект</button>
         <button id="clear-canvas">Очистить Canvas</button>
         <button id="reset-position">Сбросить положение элементов</button>
+        <button id="group-elements">Сгруппировать элементы</button>
+        <button id="ungroup-elements">Разгруппировать элементы</button>
       </aside>
       <div id="settings-panel" class="settings-panel">
         <h3>Настройки</h3>
@@ -33,6 +35,22 @@
         <label for="text-color">Цвет текста:</label>
         <input type="color" id="text-color">
       </div>
+      <div class="theme-switcher">
+        <label>
+          <input type="checkbox" id="theme-toggle"> Темная тема
+        </label>
+      </div>
+      <div class="canvas-settings">
+        <label>Ширина Canvas: <input type="number" id="canvas-width" value="800"></label>
+        <label>Высота Canvas: <input type="number" id="canvas-height" value="600"></label>
+        <button id="apply-canvas-size">Применить размер</button>
+      </div>
+      <div class="project-manager">
+        <label>Проекты: 
+          <select id="project-list"></select>
+        </label>
+        <button id="delete-project">Удалить проект</button>
+      </div>                  
     </main>
   </div>
   <script src="app.js"></script>

@@ -78,3 +78,47 @@ button:hover {
   opacity: 0.5;
   cursor: grabbing;
 }
+
+body {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.light {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+body.dark {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+header {
+  background-color: #282c34;
+}
+
+header.light {
+  background-color: #f8f9fa;
+  color: #000000;
+}
+
+header.dark {
+  background-color: #1c1c1c;
+  color: #ffffff;
+}
+
+.canvas-settings {
+  margin: 10px 0;
+}
+
+.group {
+  position: absolute;
+  display: inline-block;
+  border: 1px dashed blue;
+  cursor: grab;
+}
+
+.group.selected {
+  outline: 2px dashed red;
+}
+
